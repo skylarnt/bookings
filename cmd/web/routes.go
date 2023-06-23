@@ -9,10 +9,9 @@ import (
 	"github.com/skylarnt/bookings/pkg/handlers"
 )
 
-func Routes(app *config.AppConfig) http.Handler {
+func routes(app *config.AppConfig) http.Handler {
 	mux := chi.NewRouter()
 
-	mux.Use(middleware.Logger)
 	mux.Use(middleware.Recoverer)
 	mux.Use(NoSurf)
 	mux.Use(SessionLoad)
@@ -21,7 +20,6 @@ func Routes(app *config.AppConfig) http.Handler {
 	mux.Get("/about", handlers.Repo.About)
 
 	fileServer := http.FileServer(http.Dir("./static/"))
-
 	mux.Handle("/static/*", http.StripPrefix("/static", fileServer))
 
 	return mux

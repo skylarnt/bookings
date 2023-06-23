@@ -12,41 +12,47 @@ import (
 	"github.com/skylarnt/bookings/pkg/render"
 )
 
-var sessionManager *scs.SessionManager
-
 const portNumber = ":8080"
 
-var App config.AppConfig
+var app config.AppConfig
+var session *scs.SessionManager
 
+// main is the main function
 func main() {
-	App.Production = false
+	// change this to true when in production
+	app.InProduction = false
 
-	sessionManager = scs.New()
-	sessionManager.Lifetime = 24 * time.Hour
-	sessionManager.Cookie.Persist = true
-	sessionManager.Cookie.SameSite = http.SameSiteLaxMode
-	sessionManager.Cookie.Secure = App.Production
+	// set up the session
+	session = scs.New()
+	session.Lifetime = 24 * time.Hour
+	session.Cookie.Persist = true
+	session.Cookie.SameSite = http.SameSiteLaxMode
+	session.Cookie.Secure = app.InProduction
+
+	app.Session = session
 
 	tc, err := render.CreateTemplateCache()
 	if err != nil {
-		log.Fatal("Cannot create template cache")
+		log.Fatal("cannot create template cache")
 	}
-	App.Session = sessionManager
 
-	App.TemplateCache = tc
-	App.UseCache = false
+	app.TemplateCache = tc
+	app.UseCache = false
 
-	repo := handlers.NewRepo(&App)
+	repo := handlers.NewRepo(&app)
 	handlers.NewHandlers(repo)
-	render.NewTemplates(&App)
 
-	fmt.Println(fmt.Sprintf("Starting the development server on port %s", portNumber))
-	// _ = http.ListenAndServe(portNumber, nil)
-	server := &http.Server{
+	render.NewTemplates(&app)
+
+	fmt.Println(fmt.Sprintf("Staring application on port %s", portNumber))
+
+	srv := &http.Server{
 		Addr:    portNumber,
-		Handler: Routes(&App),
+		Handler: routes(&app),
 	}
 
-	err = server.ListenAndServe()
-	log.Fatal(err)
+	err = srv.ListenAndServe()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
