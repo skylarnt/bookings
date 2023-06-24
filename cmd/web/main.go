@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/alexedwards/scs/v2"
-	"github.com/skylarnt/bookings/pkg/config"
-	"github.com/skylarnt/bookings/pkg/handlers"
-	"github.com/skylarnt/bookings/pkg/render"
+	"github.com/skylarnt/bookings/internal/config"
+	"github.com/skylarnt/bookings/internal/handlers"
+	"github.com/skylarnt/bookings/internal/render"
 )
 
 const portNumber = ":8080"
@@ -33,7 +33,7 @@ func main() {
 
 	tc, err := render.CreateTemplateCache()
 	if err != nil {
-		log.Fatal("cannot create template cache")
+		log.Fatal("cannot create template cache", err)
 	}
 
 	app.TemplateCache = tc
