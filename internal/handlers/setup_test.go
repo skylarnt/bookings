@@ -24,8 +24,10 @@ var pathToTemplates = "./../../templates"
 var functions = template.FuncMap{}
 
 func getRoutes() http.Handler {
-	// change this to true when in production
+	// what am I going to put in the session
 	gob.Register(models.Reservation{})
+
+	// change this to true when in production
 	app.InProduction = false
 
 	// set up the session
@@ -39,7 +41,7 @@ func getRoutes() http.Handler {
 
 	tc, err := CreateTestTemplateCache()
 	if err != nil {
-		log.Fatal("cannot create template cache", err)
+		log.Fatal("cannot create template cache")
 	}
 
 	app.TemplateCache = tc
@@ -53,21 +55,23 @@ func getRoutes() http.Handler {
 	mux := chi.NewRouter()
 
 	mux.Use(middleware.Recoverer)
-	// mux.Use(NoSurf)
+	//mux.Use(NoSurf)
 	mux.Use(SessionLoad)
-	mux.Use(middleware.Logger)
 
 	mux.Get("/", Repo.Home)
 	mux.Get("/about", Repo.About)
-	mux.Get("/generals-quaters", Repo.Generals)
-	mux.Get("/majors-suite", Repo.MajorsSuits)
+	mux.Get("/generals-quarters", Repo.Generals)
+	mux.Get("/majors-suite", Repo.Majors)
+
 	mux.Get("/search-availability", Repo.Availability)
 	mux.Post("/search-availability", Repo.PostAvailability)
-	mux.Post("/search-availability-json", Repo.AvailabilityJson)
-	mux.Get("/make-reservation", Repo.MakeReservation)
+	mux.Post("/search-availability-json", Repo.AvailabilityJSON)
+
+	mux.Get("/contact", Repo.Contact)
+
+	mux.Get("/make-reservation", Repo.Reservation)
 	mux.Post("/make-reservation", Repo.PostReservation)
 	mux.Get("/reservation-summary", Repo.ReservationSummary)
-	mux.Get("/contact", Repo.Contact)
 
 	fileServer := http.FileServer(http.Dir("./static/"))
 	mux.Handle("/static/*", http.StripPrefix("/static", fileServer))
@@ -93,7 +97,7 @@ func SessionLoad(next http.Handler) http.Handler {
 	return session.LoadAndSave(next)
 }
 
-// CreateTemplateCache creates a template cache as a map
+// CreateTestTemplateCache creates a template cache as a map
 func CreateTestTemplateCache() (map[string]*template.Template, error) {
 
 	myCache := map[string]*template.Template{}
